@@ -6,6 +6,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * @author E. Javier Figueroa 
+ * COP5615 Spring 2011
+ * University of Florida
+ *
+ */
 public class Log {
 	
 	public static void write(String message){
@@ -24,7 +30,6 @@ public class Log {
 			output.append('\n');
 			output.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

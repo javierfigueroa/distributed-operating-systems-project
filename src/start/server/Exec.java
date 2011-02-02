@@ -8,6 +8,12 @@ import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import start.Common;
 import start.Log;
 
+/**
+ * @author E. Javier Figueroa 
+ * COP5615 Spring 2011
+ * University of Florida
+ *
+ */
 public class Exec implements Runnable {
 	private String host;
 	private String server;
@@ -28,12 +34,14 @@ public class Exec implements Runnable {
 	@Override
 	public void run() {
 		String path = System.getProperty("user.dir");
-		// Process process;
 		Log.write("Starting Remote Process: Client ID: " + this.id + " on " + this.host);
 		String command = "java -jar "+path+"/start.jar " + this.server	+ " " + this.port + " " + this.id;
 
-		SSHClient ssh = new SSHClient();
+		SSHClient ssh = null; 
 		try {
+			ssh = new SSHClient();
+			ssh.setConnectTimeout(1000);
+			ssh.setTimeout(1000);
 			ssh.loadKnownHosts();
 			ssh.addHostKeyVerifier ( 
 				    new HostKeyVerifier() { 
@@ -47,17 +55,18 @@ public class Exec implements Runnable {
 			
 			ssh.connect(this.host);
 			ssh.authPassword(Common.SSH_USER, Common.SSH_PASS);
-//			 ssh.authPublickey(System.getProperty("user.name"));
 			ssh.startSession().exec(command);
 			Log.write("Status: SUCCESS! Parameters Passed: " + this.server + " " + this.port + " " + this.id);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
+			Log.write("Warning: Remote Process could not start for Client ID: " + this.id + ", host: " + this.host);
+			Server.decreaseWorkers();
 			e.printStackTrace();
 		} finally {
-			try {
-				ssh.disconnect();
+			try {				
+				if (ssh != null) {
+					ssh.disconnect();
+				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

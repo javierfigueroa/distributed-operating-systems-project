@@ -11,6 +11,12 @@ import java.util.StringTokenizer;
 import start.Common;
 import start.Log;
 
+/**
+ * @author E. Javier Figueroa 
+ * COP5615 Spring 2011
+ * University of Florida
+ *
+ */
 public class Connection implements Runnable {
 	private Socket socket;
 	private BufferedReader reader;
@@ -82,7 +88,7 @@ public class Connection implements Runnable {
 		int numbers[] = Common.stringToArray(content);
 		
 		for (Integer number : numbers) {
-			Server.result.add(number);
+			Server.addResult(number);
 		}
 		
 		return reply(226);
@@ -92,45 +98,56 @@ public class Connection implements Runnable {
 		String content = st.nextToken();
 		int rating = Integer.parseInt(content.split(",")[0]);
 		this.clientId = Integer.parseInt(content.split(",")[1]);
-		
-		Server.rating.put(this.socket.getInetAddress().getHostName() + ":" + socket.getPort(), rating);
-		Transaction transaction = new Transaction();
-		transaction.setClientId(this.clientId);
-		Log.write(Thread.currentThread().getName() + "(" + this.clientId + "): Received ID" + this.clientId + " CPU Speed: " + rating + " [Updated Records]");
+		Transaction transaction = setRating(rating);
 		
 		//wait until all cpu ratings are updated
-		while (Server.rating.containsValue(-1)) {
+		while (Server.getRatings().containsValue(-1)) {
 			Thread.sleep(1000);
 		}
-		
 		Log.write(Thread.currentThread().getName() + "(" + this.clientId + "): Calculating numbers to send to clientID"+this.clientId);
-		Thread.sleep(5000);
+		Thread.sleep(2000);
 		
 		// calculate amount of numbers to send
-		int cumulativeCPUspeed = 0;
-		for (Integer speed : Server.rating.values()) {
-			cumulativeCPUspeed += speed;
-		}
-		
-		int ratio = (int) ((rating / (double)cumulativeCPUspeed) * Server.numbers.size());
-		
+		int ratio = getRatio(rating);
 		// compose list of numbers for client
+		String numbers = getNumbers(transaction, ratio);		
+		Log.write(Thread.currentThread().getName() + "(" + this.clientId + "): Assigning " + numbers + " to ClientID" + this.clientId);
+		return reply(226, numbers);
+	}
+
+	private String getNumbers(Transaction transaction, int ratio) {
 		StringBuilder builder = new StringBuilder();
 		int count = 0;
-		for (Integer number : Server.numbers.keySet()) {
-			if (!Server.numbers.get(number).isSorted()) {
+		for (Integer number : Server.getNumbers().keySet()) {
+			if (!Server.getNumbers().get(number).isSorted()) {
 				builder.append(String.valueOf(number));
 				count++;
 				transaction.setSorted(true);
-				Server.numbers.put(number, transaction);
+				Server.getNumbers().put(number, transaction);
 				
 				if (count == ratio) break;
 				builder.append(",");
 			}
-		}		
+		}
+		return builder.toString();
+	}
 
-		Log.write(Thread.currentThread().getName() + "(" + this.clientId + "): Assigning " + builder.toString() + " to ClientID" + this.clientId);
-		return reply(226, builder.toString());
+	private int getRatio(int rating) {
+		int cumulativeCPUspeed = 0;
+		for (Integer speed : Server.getRatings().values()) {
+			cumulativeCPUspeed += speed;
+		}
+		
+		int ratio = (int) ((rating / (double)cumulativeCPUspeed) * Server.getNumbers().size());
+		return ratio;
+	}
+
+	private Transaction setRating(int rating) {
+		Server.addRating(this.socket.getInetAddress().getHostName() + ":" + socket.getPort(), rating);
+		Transaction transaction = new Transaction();
+		transaction.setClientId(this.clientId);
+		Log.write(Thread.currentThread().getName() + "(" + this.clientId + "): Received ID" + this.clientId + " CPU Speed: " + rating + " [Updated Records]");
+		return transaction;
 	}
 
 	public int reply(int code) {

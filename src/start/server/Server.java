@@ -10,15 +10,44 @@ import java.util.HashMap;
 import start.Common;
 import start.Log;
 
+/**
+ * @author E. Javier Figueroa 
+ * COP5615 Spring 2011
+ * University of Florida
+ *
+ */
 public class Server implements Runnable {
 	private String host;
 	private int port;
 	private ServerSocket socket;
-	private int workers = 0;
-
-	public static HashMap<Integer, Transaction> numbers = new HashMap<Integer, Transaction>();
-	public static HashMap<String, Integer> rating = new HashMap<String, Integer>(); // host and CPU rating (1-10)
-	public static ArrayList<Integer> result = new ArrayList<Integer>();
+	private static int workers = 0;
+	private static HashMap<Integer, Transaction> numbers = new HashMap<Integer, Transaction>();
+	private static HashMap<String, Integer> rating = new HashMap<String, Integer>(); // host and CPU rating (1-10)
+	private static ArrayList<Integer> result = new ArrayList<Integer>();
+	
+	public static synchronized void decreaseWorkers() {
+		Server.workers--;
+	}
+	
+	public static synchronized void addRating(String host, Integer rating) {
+		Server.rating.put(host, rating);
+	}
+	
+	public static synchronized HashMap<String, Integer> getRatings() {
+		return Server.rating;
+	}
+	
+	public static synchronized void addNumbers(Integer number, Transaction transaction) {
+		Server.numbers.put(number, transaction);
+	}
+	
+	public static synchronized HashMap<Integer, Transaction> getNumbers() {
+		return Server.numbers;
+	}
+	
+	public static synchronized void addResult(Integer number) {
+		Server.result.add(number);
+	}
 	
 	public Server() throws IOException {
 		this.socket = new ServerSocket(0);
@@ -42,7 +71,7 @@ public class Server implements Runnable {
 
 	private void startClients() throws IOException {
 		for (String host : Common.MACHINES) { // read files with hosts
-			Exec runner = new Exec(host, this.host, this.port, this.workers++);
+			Exec runner = new Exec(host, this.host, this.port, Server.workers++);
 			new Thread(runner).start(); 
 		}
 	}
@@ -51,11 +80,9 @@ public class Server implements Runnable {
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 
 		try {
-			while (threads.size() < this.workers) {
-				Socket socket = this.socket.accept();
-				
+			while (threads.size() < Server.workers) {
+				Socket socket = this.socket.accept();				
 				Server.rating.put(socket.getInetAddress().getHostName() + ":" + socket.getPort(), -1);
-				
 				Log.write("Server: Accepting a new connection...");
 				Connection connection = new Connection(socket);
 				Thread thread = new Thread(connection);
@@ -71,7 +98,6 @@ public class Server implements Runnable {
 			try {
 				thread.join();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

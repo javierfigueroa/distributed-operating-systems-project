@@ -5,6 +5,12 @@ import java.io.IOException;
 import start.client.Client;
 import start.server.Server;
 
+/**
+ * @author E. Javier Figueroa 
+ * COP5615 Spring 2011
+ * University of Florida
+ *
+ */
 public class Start {
 	public static void main(String[] args) {
 
@@ -36,10 +42,8 @@ public class Start {
 				new Client(host, port, id);
 			} 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

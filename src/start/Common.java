@@ -5,20 +5,22 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.StringTokenizer;
 
+/**
+ * @author E. Javier Figueroa 
+ * COP5615 Spring 2011
+ * University of Florida
+ *
+ */
 public class Common {
 	public static final String SSH_USER = "figueroa";
 	public static final String SSH_PASS = "J4v13r!";
-//	public static final String SSH_USER = "javier.figueroa";
-//	public static final String SSH_PASS = "Hurricanes09#";
 	public static final String[] MACHINES = new String[] { 
 		"lin114-01.cise.ufl.edu",
-		"lin114-02.cise.ufl.edu",
+//		"lin114-02.cise.ufl.edu",
 		"lin114-03.cise.ufl.edu",
 		"lin114-04.cise.ufl.edu",
 		"lin114-05.cise.ufl.edu",
 		"lin114-06.cise.ufl.edu" 
-//		"192.168.1.104",
-//		"192.168.1.104"
 	};
 	
 	public static int random(int start, int end) {

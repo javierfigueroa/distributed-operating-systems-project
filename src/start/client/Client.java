@@ -9,6 +9,12 @@ import java.net.Socket;
 import start.Common;
 import start.Log;
 
+/**
+ * @author E. Javier Figueroa 
+ * COP5615 Spring 2011
+ * University of Florida
+ *
+ */
 public class Client {
 	private String host;
 	private int port;
