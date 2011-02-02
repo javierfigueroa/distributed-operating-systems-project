@@ -29,6 +29,10 @@ public class Server implements Runnable {
 		Server.workers--;
 	}
 	
+	public static synchronized int getWorkers() {
+		return Server.workers;
+	}
+	
 	public static synchronized void addRating(String host, Integer rating) {
 		Server.rating.put(host, rating);
 	}
@@ -47,6 +51,10 @@ public class Server implements Runnable {
 	
 	public static synchronized void addResult(Integer number) {
 		Server.result.add(number);
+	}
+	
+	public static synchronized ArrayList<Integer> getResult() {
+		return Server.result;
 	}
 	
 	public Server() throws IOException {
@@ -78,7 +86,7 @@ public class Server implements Runnable {
 
 	public void run() {
 		ArrayList<Thread> threads = new ArrayList<Thread>();
-
+		ArrayList<Connection> connections = new ArrayList<Connection>();
 		try {
 			while (threads.size() < Server.workers - 1) {
 				Socket socket = this.socket.accept();				
@@ -86,11 +94,28 @@ public class Server implements Runnable {
 				Log.write("Server: Accepting a new connection...");
 				Connection connection = new Connection(socket);
 				Thread thread = new Thread(connection);
+				connections.add(connection);
 				threads.add(thread);
 				thread.start();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		
+		// Wait for the ratings to come back
+		while (Server.getRatings().containsValue(-1)) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		// Wake up connection threads
+		for (Connection connection : connections) {
+			synchronized (connection) {
+				connection.notify();
+			}
 		}
 		
 		// wait for the threads to finish their work

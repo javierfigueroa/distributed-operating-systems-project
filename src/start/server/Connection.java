@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import start.Common;
@@ -88,7 +89,9 @@ public class Connection implements Runnable {
 		int numbers[] = Common.stringToArray(content);
 		
 		for (Integer number : numbers) {
-			Server.addResult(number);
+			if (!Server.getResult().contains(number)) {
+				Server.addResult(number);
+			}
 		}
 		
 		return reply(226);
@@ -101,11 +104,12 @@ public class Connection implements Runnable {
 		Transaction transaction = setRating(rating);
 		
 		//wait until all cpu ratings are updated
-		while (Server.getRatings().containsValue(-1)) {
-			Thread.sleep(1000);
-		}
 		Log.write(Thread.currentThread().getName() + "(" + this.clientId + "): Calculating numbers to send to clientID"+this.clientId);
-		Thread.sleep(4000);
+		while (Server.getRatings().size() < Server.getWorkers() - 1) {
+			synchronized (this) {
+				wait();
+			}
+		}
 		
 		// calculate amount of numbers to send
 		int ratio = getRatio(rating);
@@ -118,8 +122,9 @@ public class Connection implements Runnable {
 	private String getNumbers(Transaction transaction, int ratio) {
 		StringBuilder builder = new StringBuilder();
 		int count = 0;
-		for (Integer number : Server.getNumbers().keySet()) {
-			if (!Server.getNumbers().get(number).isSorted()) {
+		HashMap<Integer, Transaction> numbers = Server.getNumbers();
+		for (Integer number : numbers.keySet()) {
+			if (!numbers.get(number).isSorted()) {
 				builder.append(String.valueOf(number));
 				count++;
 				transaction.setSorted(true);
