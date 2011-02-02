@@ -105,7 +105,7 @@ public class Connection implements Runnable {
 			Thread.sleep(1000);
 		}
 		Log.write(Thread.currentThread().getName() + "(" + this.clientId + "): Calculating numbers to send to clientID"+this.clientId);
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 		
 		// calculate amount of numbers to send
 		int ratio = getRatio(rating);

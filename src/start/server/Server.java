@@ -20,7 +20,7 @@ public class Server implements Runnable {
 	private String host;
 	private int port;
 	private ServerSocket socket;
-	private static int workers = 0;
+	private static int workers = 1;
 	private static HashMap<Integer, Transaction> numbers = new HashMap<Integer, Transaction>();
 	private static HashMap<String, Integer> rating = new HashMap<String, Integer>(); // host and CPU rating (1-10)
 	private static ArrayList<Integer> result = new ArrayList<Integer>();
@@ -80,7 +80,7 @@ public class Server implements Runnable {
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 
 		try {
-			while (threads.size() < Server.workers) {
+			while (threads.size() < Server.workers - 1) {
 				Socket socket = this.socket.accept();				
 				Server.rating.put(socket.getInetAddress().getHostName() + ":" + socket.getPort(), -1);
 				Log.write("Server: Accepting a new connection...");
