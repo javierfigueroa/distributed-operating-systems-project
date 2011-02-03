@@ -1,4 +1,4 @@
-package start.server;
+
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -7,14 +7,12 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import start.Common;
-import start.Log;
 
 /**
  * @author E. Javier Figueroa 
- * COP5615 Spring 2011
+ * COP5615 Spring 2011 
  * University of Florida
- *
+ * 
  */
 public class Server implements Runnable {
 	private String host;
@@ -22,48 +20,51 @@ public class Server implements Runnable {
 	private ServerSocket socket;
 	private static int workers = 1;
 	private static HashMap<Integer, Transaction> numbers = new HashMap<Integer, Transaction>();
-	private static HashMap<String, Integer> rating = new HashMap<String, Integer>(); // host and CPU rating (1-10)
+	private static HashMap<String, Integer> rating = new HashMap<String, Integer>(); 
 	private static ArrayList<Integer> result = new ArrayList<Integer>();
-	
+
 	public static synchronized void decreaseWorkers() {
 		Server.workers--;
 	}
-	
+
 	public static synchronized int getWorkers() {
 		return Server.workers;
 	}
-	
+
 	public static synchronized void addRating(String host, Integer rating) {
 		Server.rating.put(host, rating);
 	}
-	
+
 	public static synchronized HashMap<String, Integer> getRatings() {
 		return Server.rating;
 	}
-	
-	public static synchronized void addNumbers(Integer number, Transaction transaction) {
+
+	public static synchronized void addNumbers(Integer number,
+			Transaction transaction) {
 		Server.numbers.put(number, transaction);
 	}
-	
+
 	public static synchronized HashMap<Integer, Transaction> getNumbers() {
 		return Server.numbers;
 	}
-	
+
 	public static synchronized void addResult(Integer number) {
-		Server.result.add(number);
+		if (!Server.getResult().contains(number)) {
+			Server.result.add(number);
+		}
 	}
-	
+
 	public static synchronized ArrayList<Integer> getResult() {
 		return Server.result;
 	}
-	
+
 	public Server() throws IOException {
 		this.socket = new ServerSocket(0);
 		this.host = InetAddress.getLocalHost().getHostName();
 		this.port = this.socket.getLocalPort();
 		Log.write("Server has started on port " + this.port + "!");
 		Log.write("Host name: " + this.host);
-		
+
 		generateNumbers();
 		startClients();
 	}
@@ -80,7 +81,7 @@ public class Server implements Runnable {
 	private void startClients() throws IOException {
 		for (String host : Common.MACHINES) { // read files with hosts
 			Exec runner = new Exec(host, this.host, this.port, Server.workers++);
-			new Thread(runner).start(); 
+			new Thread(runner).start();
 		}
 	}
 
@@ -89,8 +90,9 @@ public class Server implements Runnable {
 		ArrayList<Connection> connections = new ArrayList<Connection>();
 		try {
 			while (threads.size() < Server.workers - 1) {
-				Socket socket = this.socket.accept();				
-				Server.rating.put(socket.getInetAddress().getHostName() + ":" + socket.getPort(), -1);
+				Socket socket = this.socket.accept();
+				Server.rating.put(socket.getInetAddress().getHostName() + ":"
+						+ socket.getPort(), -1);
 				Log.write("Server: Accepting a new connection...");
 				Connection connection = new Connection(socket);
 				Thread thread = new Thread(connection);
@@ -101,7 +103,7 @@ public class Server implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		// Wait for the ratings to come back
 		while (Server.getRatings().containsValue(-1)) {
 			try {
@@ -110,14 +112,14 @@ public class Server implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		
+
 		// Wake up connection threads
 		for (Connection connection : connections) {
 			synchronized (connection) {
 				connection.notify();
 			}
 		}
-		
+
 		// wait for the threads to finish their work
 		for (Thread thread : threads) {
 			try {
@@ -126,18 +128,21 @@ public class Server implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		
+
 		// merge the result
 		Log.write("Server: Received all sorted subseq");
-		Integer[] sorted = new Integer[Server.result.size()];
-		sorted = Server.result.toArray(sorted);
+		int[] sorted = new int[Server.result.size()];
+		for (int i=0;i<sorted.length;i++) {
+			sorted[i] = Server.result.get(i);
+		}
+		
 		Log.write("Server: Doing merge sort...");
-		MergeSort sorter = new MergeSort();
-		sorter.sort(sorted);
+		MergeSort sorter = new MergeSort(sorted);
+		sorter.sort();
 		
 		Log.write("-------------------------------------");
 		Log.write("Server: Final Sorted Sequence");
-		for ( Integer number : sorter.getNumbers()) {
+		for (int number : sorter.getList()) {
 			System.out.print(number + " ");
 		}
 		System.out.println();

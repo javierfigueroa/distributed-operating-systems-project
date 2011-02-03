@@ -1,4 +1,4 @@
-package start.client;
+
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -6,8 +6,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
-import start.Common;
-import start.Log;
 
 /**
  * @author E. Javier Figueroa 
@@ -38,6 +36,7 @@ public class Client {
 		}
 	}
 	
+	@Override 
 	public void finalize() {
 		try {
 			this.socket.close();
@@ -87,7 +86,6 @@ public class Client {
 		Common.sendCommand("BYE", this.writer);
 		Log.writeToFile("BYE", this.id);
 		this.reader.readLine();
-		finalize();
 		Log.writeToFile("Terminating Connection! OK!", this.id);
 	}
 

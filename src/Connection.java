@@ -1,4 +1,4 @@
-package start.server;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,8 +9,6 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-import start.Common;
-import start.Log;
 
 /**
  * @author E. Javier Figueroa 
@@ -89,9 +87,7 @@ public class Connection implements Runnable {
 		int numbers[] = Common.stringToArray(content);
 		
 		for (Integer number : numbers) {
-			if (!Server.getResult().contains(number)) {
-				Server.addResult(number);
-			}
+			Server.addResult(number);
 		}
 		
 		return reply(226);
@@ -111,6 +107,7 @@ public class Connection implements Runnable {
 			}
 		}
 		
+		Thread.sleep(1000);
 		// calculate amount of numbers to send
 		int ratio = getRatio(rating);
 		// compose list of numbers for client

@@ -1,9 +1,7 @@
-package start;
+
 
 import java.io.IOException;
 
-import start.client.Client;
-import start.server.Server;
 
 /**
  * @author E. Javier Figueroa 
@@ -11,7 +9,7 @@ import start.server.Server;
  * University of Florida
  *
  */
-public class Start {
+public class start {
 	public static void main(String[] args) {
 
 		if (args.length != 0 && args.length != 3 && args.length > 3) {
