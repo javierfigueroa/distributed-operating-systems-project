@@ -100,7 +100,7 @@ public class Connection implements Runnable {
 		Transaction transaction = setRating(rating);
 		
 		//wait until all cpu ratings are updated
-		Log.write(Thread.currentThread().getName() + "(" + this.clientId + "): Calculating numbers to send to clientID"+this.clientId);
+		Log.write(Thread.currentThread().getName() + "(" + this.clientId + "): Waiting for other threads before assigning numbers to ClientID" + this.clientId + " ...");
 		while (Server.getRatings().size() < Server.getWorkers() - 1) {
 			synchronized (this) {
 				wait();

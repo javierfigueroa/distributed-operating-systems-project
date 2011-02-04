@@ -113,13 +113,14 @@ public class Server implements Runnable {
 			}
 		}
 
-		// Wake up connection threads
-		for (Connection connection : connections) {
-			synchronized (connection) {
-				connection.notify();
-			}
-		}
+		wakeThreads(connections);
+		joinThreads(threads);
 
+		MergeSort sorter = sortResult();
+		printResult(sorter);
+	}
+
+	private void joinThreads(ArrayList<Thread> threads) {
 		// wait for the threads to finish their work
 		for (Thread thread : threads) {
 			try {
@@ -128,7 +129,28 @@ public class Server implements Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
 
+	private void wakeThreads(ArrayList<Connection> connections) {
+		// Wake up connection threads
+		for (Connection connection : connections) {
+			synchronized (connection) {
+				connection.notify();
+			}
+		}
+	}
+
+	private void printResult(MergeSort sorter) {
+		Log.write("-------------------------------------");
+		Log.write("Server: Final Sorted Sequence");
+		for (int number : sorter.getList()) {
+			System.out.print(number + " ");
+		}
+		System.out.println();
+		Log.write("Server: Exiting...");
+	}
+
+	private MergeSort sortResult() {
 		// merge the result
 		Log.write("Server: Received all sorted subseq");
 		int[] sorted = new int[Server.result.size()];
@@ -139,13 +161,6 @@ public class Server implements Runnable {
 		Log.write("Server: Doing merge sort...");
 		MergeSort sorter = new MergeSort(sorted);
 		sorter.sort();
-		
-		Log.write("-------------------------------------");
-		Log.write("Server: Final Sorted Sequence");
-		for (int number : sorter.getList()) {
-			System.out.print(number + " ");
-		}
-		System.out.println();
-		Log.write("Server: Exiting...");
+		return sorter;
 	}
 }
