@@ -1,3 +1,4 @@
+package uf.cop5615.projects.project1;
 
 public class MergeSort {
 	private int[] list;
