@@ -1,4 +1,4 @@
-package uf.cop5615.projects.project1;
+package project1;
 
 
 /**
