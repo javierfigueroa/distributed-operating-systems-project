@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
 
 
 /**
@@ -17,6 +18,9 @@ public class Server implements Runnable {
 	private int port;
 	private ServerSocket socket;
 	private static int workers = 1;
+	
+	public static SharedObject sharedObject = new SharedObject();
+	
 
 	public Server() throws IOException {
 		this.socket = new ServerSocket(0);

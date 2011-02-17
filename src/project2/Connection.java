@@ -6,13 +6,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.StringTokenizer;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * @author E. Javier Figueroa 11/27/2010 CNT 5106c Fall 2010 
- * University of Florida
+ * @author E. Javier Figueroa 11/27/2010 CNT 5106c Fall 2010 University of
+ *         Florida
  * 
  */
 public class Connection implements Runnable {
@@ -27,8 +26,10 @@ public class Connection implements Runnable {
 
 	public Connection(Socket socket) throws IOException {
 		this.socket = socket;
-		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		this.writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+		this.reader = new BufferedReader(new InputStreamReader(socket
+				.getInputStream()));
+		this.writer = new PrintWriter(new OutputStreamWriter(socket
+				.getOutputStream()), true);
 	}
 
 	@Override
@@ -66,31 +67,63 @@ public class Connection implements Runnable {
 			StringTokenizer st = new StringTokenizer(line);
 			String command = st.nextToken().toLowerCase();
 
-//			int code = 0;
-//			if (command.equals("register-peer")) {
-//				code = register(st);
-//			} else if (command.equals("upload")) {
-//				code = upload(st);
-//			} else if (command.equals("query")) {
-//				code = query(st);
-//			} else if (command.equals("download")) {
-//				code = download(st);
-//			} else if (command.equals("port")) {
-//				code = setPort(st);
-//			} else if (command.equals("quit")) {
-//				code = quit();
-//			}
-//
-//			if (code == 221 || code == 0) return;
+			int code = 0;
+			if (command.equals("write")) {
+				code = write(st);
+			} else if (command.equals("read")) {
+				code = read(st);
+			} else if (command.equals("port")) {
+				code = setPort(st);
+			} else if (command.equals("quit")) {
+				code = quit();
+			}
+
+			if (code == 221 || code == 0)
+				return;
 		}
 	}
 
-	
+	private int read(StringTokenizer st) throws InterruptedException {
+		int clientId = Integer.parseInt(st.nextToken());
+		long opTime = Long.parseLong(st.nextToken());
+		Read read = new Read(clientId);
+		read.setWriter(writer);
+//		Server.sharedObject.queue(read);
+		
+		Log.write(Thread.currentThread().getName() + "( Reader" + read.getId() + "): Queueing ClientID" + read.getId() + " ...");
+		synchronized (this) {
+			wait(opTime);
+		}
+		
+		int value = Server.sharedObject.getValue();
+		
+		return reply(226, String.valueOf(value));
+	}
+
+	private int write(StringTokenizer st) throws InterruptedException {
+		int clientId = Integer.parseInt(st.nextToken());
+		long opTime = Long.parseLong(st.nextToken());
+		int value = Integer.parseInt(st.nextToken());
+		
+		Write write = new Write(clientId, value);
+		write.setWriter(writer);
+//		Server.sharedObject.queue(write);
+		
+		Log.write(Thread.currentThread().getName() + "( Writer " + write.getId() + "): Queueing ClientID" + write.getId() + " ...");
+		synchronized (this) {
+			wait(opTime);
+		}
+		
+		Server.sharedObject.setValue(value);
+		
+		return reply(226);
+	}
 
 	/**
 	 * Sets the port to be used in an opened connection
 	 * 
-	 * @param st command
+	 * @param st
+	 *            command
 	 * @return 200 to acknowledge the setting of the port
 	 */
 	private int setPort(StringTokenizer st) {
@@ -106,7 +139,7 @@ public class Connection implements Runnable {
 		String dataHost = h1 + "." + h2 + "." + h3 + "." + h4;
 		int dataPort = (p1 << 8) | p2;
 
-//		this.socketMessenger.setDataPort(dataHost, dataPort);
+		// this.socketMessenger.setDataPort(dataHost, dataPort);
 
 		return reply(200);
 	}
