@@ -20,16 +20,19 @@ public final class PropertyManager {
 			StringBuilder text = new StringBuilder();
 			String NL = System.getProperty("line.separator");
 			String path = System.getProperty("user.dir");
-			String filename = path + "system.properties";
+			String filename = path + "/system.properties";
 			Scanner scanner = null;
 			try {
 				scanner = new Scanner(new FileInputStream(filename));
 				while (scanner.hasNextLine()){
 					String line = scanner.nextLine();
+					if (line.startsWith("#")) {
+						continue;
+					}
+					
 					StringTokenizer st = new StringTokenizer(line, "=");
-
-					String key = st.nextToken().toLowerCase();
-					String value = st.nextToken().toLowerCase();
+					String key = st.nextToken();
+					String value = st.nextToken();
 
 					properties.put(key, value);
 					text.append(line + NL);

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.PriorityQueue;
 
 
 /**
@@ -14,13 +13,6 @@ import java.util.PriorityQueue;
  * 
  */
 public class Server implements Runnable {
-	private String host;
-	private int port;
-	private ServerSocket socket;
-	private static int workers = 1;
-	
-	public static SharedObject sharedObject = new SharedObject();
-	
 
 	public Server() throws IOException {
 		this.socket = new ServerSocket(0);
@@ -34,39 +26,39 @@ public class Server implements Runnable {
 
 
 	private void startClients() throws IOException {
-		while (Server.workers < 9) { // read files with hosts
+		int i = 0;
+		while (i < Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfReaders"))) { // read files with hosts
 			String host = PropertyManager.getProperties().get("RW.reader" + Server.workers);
-			Executor runner = new Executor(host, this.host, this.port, Server.workers++, ClientType.reader);
+			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.read);
 			new Thread(runner).start();
+			i++;
 		}
 		
-		Server.workers = 1;
-		while (Server.workers < 9) { // read files with hosts
+		i = 0;
+		while (i < Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfWriters"))) { // read files with hosts
 			String host = PropertyManager.getProperties().get("RW.writer" + Server.workers);
-			Executor runner = new Executor(host, this.host, this.port, Server.workers++, ClientType.writer);
+			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.write);
 			new Thread(runner).start();
+			i++;
 		}
 	}
 
 	public void run() {
 		ArrayList<Thread> threads = new ArrayList<Thread>();
-		ArrayList<Connection> connections = new ArrayList<Connection>();
 		try {
 			while (threads.size() < Server.workers - 1) {
 				Socket socket = this.socket.accept();
 
 				Log.write("Server: Accepting a new connection...");
-				Connection connection = new Connection(socket);
+				Connection connection = new Connection(socket, Server.request++);
 				Thread thread = new Thread(connection);
-				connections.add(connection);
 				threads.add(thread);
 				thread.start();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		wakeThreads(connections);
+		
 		joinThreads(threads);
 	}
 
@@ -80,13 +72,14 @@ public class Server implements Runnable {
 			}
 		}
 	}
+	
 
-	private void wakeThreads(ArrayList<Connection> connections) {
-		// Wake up connection threads
-		for (Connection connection : connections) {
-			synchronized (connection) {
-				connection.notify();
-			}
-		}
-	}
+	private String host;
+	private int port;
+	private ServerSocket socket;
+	public static int workers = 1;
+	
+	public static int request = 0;
+	public static int service = 0;
+	public static SharedObject sharedObject = new SharedObject();
 }

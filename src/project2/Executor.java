@@ -13,13 +13,13 @@ public class Executor implements Runnable {
 	private String server;
 	private int port;
 	private int id;
-	private ClientType type;
+	private Action type;
 
 	public int getId() {
 		return id;
 	}
 
-	public Executor(String host, String server, int port, int id, ClientType type) {
+	public Executor(String host, String server, int port, int id, Action type) {
 		this.host = host;
 		this.server = server;
 		this.port = port;
@@ -32,19 +32,20 @@ public class Executor implements Runnable {
 		String path = System.getProperty("user.dir");
 		Log.write("Starting Remote Process: Client ID: " + this.id + " on "
 				+ this.host);
+		int times = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfAccesses"));
 		String[] command = {
 				"ssh",
 				"-i",
 				"id_javier",
 				"figueroa@" + this.host,
 				"java -jar " + path + "/start.jar " + this.server + " "
-						+ this.port + " " + type.toString() + " " + this.id };
+						+ this.port + " " + this.id + " " + type.name() + " " + times };
 
 		try {
 			Runtime rt = Runtime.getRuntime();
 			Process pr = rt.exec(command);
 
-			Log.write("Status: SUCCESS! Parameters Passed: " + this.server	+ " " + this.port + " " + this.id);
+			Log.write("Status: SUCCESS! Parameters Passed: " + this.server	+ " " + this.port + " " + this.id + " " + type.name() + " " + times);
 
 			OutputStream stdin = pr.getOutputStream();
 			String carriageReturn = "\n";
@@ -56,9 +57,11 @@ public class Executor implements Runnable {
 			int exitValue = pr.exitValue();
 			if (exitValue != 0) {
 				Log.write("Warning: Remote Process could not start for " + this.type + " Client ID: "	+ this.id + ", host: " + this.host);
+				Server.workers--;
 			}
 		} catch (Exception e) {
 			Log.write("Warning: Remote Process could not start for " + this.type + " Client ID: "	+ this.id + ", host: " + this.host);
+			Server.workers--;
 			e.printStackTrace();
 		} 
 	}

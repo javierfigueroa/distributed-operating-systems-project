@@ -1,6 +1,5 @@
 package project2;
 
-import java.util.PriorityQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -56,14 +55,11 @@ public class SharedObject{
 //	  return value;
 //	}
 
-	
-	ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-	Lock readLock = lock.readLock();
-	Lock writeLock = lock.writeLock();
 
 	public void setValue(int value) {
 	  writeLock.lock();
 	  try {
+		Server.service++;
 	    this.value = value;
 	  } finally {
 	    writeLock.unlock();
@@ -73,12 +69,16 @@ public class SharedObject{
 	public int getValue() {
 	  readLock.lock();
 	  try {
+		Server.service++;
 	    return value;
 	  } finally {
 	    readLock.unlock();
 	  }
 	}
-
+	
+	ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+	Lock readLock = lock.readLock();
+	Lock writeLock = lock.writeLock();
 	
 //	private PriorityQueue<IAction> queue = new PriorityQueue<IAction>();
 }
