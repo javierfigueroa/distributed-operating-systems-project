@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Random;
 
 
 /**
@@ -13,8 +14,8 @@ import java.util.ArrayList;
  * 
  */
 public class Server implements Runnable {
-
-	public Server() throws IOException {
+	
+	public Server() throws IOException, InterruptedException {
 		this.socket = new ServerSocket(0);
 		this.host = PropertyManager.getProperties().get("RW.server");
 		this.port = this.socket.getLocalPort();
@@ -22,14 +23,27 @@ public class Server implements Runnable {
 		Log.write("Host name: " + this.host);
 		
 		startClients();
+		initOutput();
 	}
 
+	private void initOutput() {
+		readerOutput.append("Read Requests:").append(Common.NL);
+		readerOutput.append("Service Sequence \t\tObject Value \t\t Read by   \t\t	 Num of Readers").append(Common.NL);
+		readerOutput.append("---------------- \t\t------------ \t\t --------- \t\t	 --------------").append(Common.NL);
+		
+		writerOutput.append("Write Requests:").append(Common.NL);
+		writerOutput.append("Service Sequence \t\tObject Value \t\t Written by").append(Common.NL);
+		writerOutput.append("---------------- \t\t------------ \t\t ----------").append(Common.NL);		
+	}
 
-	private void startClients() throws IOException {
+	private void startClients() throws IOException, InterruptedException {
+		Random randomSleep = new Random();
 		int i = 0;
 		while (i < numberOfReaders) { // read files with hosts
 			String host = PropertyManager.getProperties().get("RW.reader" + Server.workers);
-			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.read);
+			long sleep = Long.parseLong(PropertyManager.getProperties().get("RW.reader"+Server.workers+".sleepTime"));
+			Thread.sleep(1500 + randomSleep.nextInt(500));
+			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.read, sleep);
 			new Thread(runner).start();
 			i++;
 		}
@@ -37,7 +51,9 @@ public class Server implements Runnable {
 		i = 0;
 		while (i < numberOfWriters) { // read files with hosts
 			String host = PropertyManager.getProperties().get("RW.writer" + Server.workers);
-			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.write);
+			long sleep = Long.parseLong(PropertyManager.getProperties().get("RW.writer"+Server.workers+".sleepTime"));
+			Thread.sleep(1500 + randomSleep.nextInt(500));
+			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.write, sleep);
 			new Thread(runner).start();
 			i++;
 		}
@@ -61,6 +77,8 @@ public class Server implements Runnable {
 		}
 		
 		joinThreads(threads);
+		Log.write(Server.readerOutput.toString());
+		Log.write(Server.writerOutput.toString());
 	}
 
 	private void joinThreads(ArrayList<Thread> threads) {
@@ -81,9 +99,13 @@ public class Server implements Runnable {
 	private int numberOfAccesses = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfAccesses"));
 	private int numberOfReaders = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfReaders"));
 	private int numberOfWriters = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfWriters"));
-	public static int workers = 1;
 	
-	public static int request = 0;
-	public static int service = 0;
+	public static int workers = 1;
+	public static volatile int request = 0;
+	public volatile static int service = 0;
+	public static volatile int readers = 0;
+
 	public static SharedObject sharedObject = new SharedObject();
+	public static volatile StringBuffer readerOutput = new StringBuffer();
+	public static volatile StringBuffer writerOutput = new StringBuffer();
 }

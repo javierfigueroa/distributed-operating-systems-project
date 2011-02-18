@@ -18,7 +18,6 @@ public final class PropertyManager {
 			Log.write("Reading properties from file...");
 
 			StringBuilder text = new StringBuilder();
-			String NL = System.getProperty("line.separator");
 			String path = System.getProperty("user.dir");
 			String filename = path + "/system.properties";
 			Scanner scanner = null;
@@ -35,7 +34,7 @@ public final class PropertyManager {
 					String value = st.nextToken();
 
 					properties.put(key, value);
-					text.append(line + NL);
+					text.append(line + Common.NL);
 				}
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
@@ -45,7 +44,7 @@ public final class PropertyManager {
 					scanner.close();
 				}
 			}
-			Log.write("Properties found in file: " + filename + NL + text.toString());
+			Log.write("Properties found in file: " + filename + Common.NL + text.toString());
 			
 	}
 	

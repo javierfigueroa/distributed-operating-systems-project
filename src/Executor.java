@@ -14,17 +14,19 @@ public class Executor implements Runnable {
 	private int port;
 	private int id;
 	private Action type;
+	private long sleep;
 
 	public int getId() {
 		return id;
 	}
 
-	public Executor(String host, String server, int port, int id, Action type) {
+	public Executor(String host, String server, int port, int id, Action type, long sleep) {
 		this.host = host;
 		this.server = server;
 		this.port = port;
 		this.id = id;
 		this.type = type;
+		this.sleep = sleep;
 	}
 
 	public void run() {
@@ -39,14 +41,14 @@ public class Executor implements Runnable {
 				"figueroa@" + this.host,
 //				"~/.ssh/id_rsa",
 //				"javier.figueroa@" + this.host,
-				"javac "+ path + "/*.java; java "+ path + "/start " + this.server + " "
-						+ this.port + " " + this.id + " " + type.name() + " " + times };
+				"cd " + path + " ; java start " + this.server + " "
+						+ this.port + " " + this.id + " " + type.name() + " " + times + " " + sleep };
 
 		try {
 			Runtime rt = Runtime.getRuntime();
 			Process pr = rt.exec(command);
 
-			Log.write("Status: SUCCESS! Parameters Passed: " + this.server	+ " " + this.port + " " + this.id + " " + type.name() + " " + times);
+			Log.write("Status: SUCCESS! Parameters Passed: " + this.server	+ " " + this.port + " " + this.id + " " + type.name() + " " + times + " " + sleep) ;
 
 			OutputStream stdin = pr.getOutputStream();
 			String carriageReturn = "\n";

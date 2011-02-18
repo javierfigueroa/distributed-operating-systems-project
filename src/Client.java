@@ -15,11 +15,12 @@ public class Client {
 	private int id;
 	private Action action;
 	private int times;
+	private long sleep;
 	private Socket socket;
 	private BufferedReader reader;
 	private BufferedWriter writer;
 
-	public Client(String host, int port, int id, Action action, int times) {
+	public Client(String host, int port, int id, Action action, int times, long sleep) {
 		this.host = host;
 		this.port = port;
 		this.id = id;
@@ -99,8 +100,8 @@ public class Client {
 
 			// terminate
 			Common.sendCommand("BYE", this.writer);
-			Log.writeToFile("BYE", this.id);
 			this.reader.readLine();
+			Thread.sleep(sleep);
 		}
 	}
 
