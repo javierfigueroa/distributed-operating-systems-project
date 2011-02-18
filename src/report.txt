@@ -1,0 +1,12 @@
+REPORT
+E. Javier Figueroa
+COP 5615 - Project 1
+
+- Development
+
+The project was developed to be logically divided in 2 horizontal layers. The top layer with a very simple class that serves as entry point to the application. This layer starts a server or a client based on the input arguments. 
+The lower layer is divided in 2 vertical layers. One is the server and the other is the client. The server code simply initializes a server socket, generates a random list of numbers from 1-500 and starts several threads that start a remote process in other machines. Once this setup is finished, the server waits for connections and spawns a thread for each received connection. These connection threads take responsibility of communicating with the clients. Finally, the client code runs asynchronously through the execution of the remote processes by the server. This code connects to the server. It lets the server know it's CPU capability, receives work and gives back the result of that work.
+
+- Challenges
+
+Some of the challenges when working with multi-threaded applications is concurrency. In order to deal with this problem I had to synchronize access to shared objects by threads. This avoided miss calculations and provided security that the output of the program was reliable. Another challenge was the execution of the remote process in other machines. To tackle this problem I've used a third party well-known ssh for java library. This provided me with an API to ssh to the other machines and execute commands.
