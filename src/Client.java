@@ -1,5 +1,3 @@
-
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
@@ -48,29 +46,30 @@ public class Client {
 
 	private void work() throws Exception {
 		// connect to server
-		
-		Log.writeToFile("Client Type: " + action.name() + "r", id);
+
+		Log.writeToFile("Client Type: " + action.name() + "er", id);
 		Log.writeToFile("Client Name: " + id, id);
 		if (action == Action.read) {
-			Log.writeToFile("Request Sequence	Service Sequence	Object Value", id);
-			Log.writeToFile("----------------	----------------	------------", id);
-		}else{
+			Log.writeToFile("Request Sequence	Service Sequence	Object Value",
+					id);
+			Log.writeToFile("----------------	----------------	------------",
+					id);
+		} else {
 			Log.writeToFile("Request Sequence	Service Sequence", id);
 			Log.writeToFile("----------------	----------------", id);
 		}
-		
-		if (!connect()) {
-			String error = String.format(
-					"Failed to connect to server => %s:%d", this.host,
-					this.port);
-			Log.write(error);
-			throw new Exception(error);
-		}
 
 		for (int i = 0; i < times; i++) {
+			if (!connect()) {
+				String error = String.format(
+						"Failed to connect to server => %s:%d", this.host,
+						this.port);
+				Log.write(error);
+				throw new Exception(error);
+			}
+
 			Common.sendCommand(String.format("%s %d", action.name(), this.id),
 					this.writer);
-			Log.writeToFile("Sent: action " + action.name(), this.id);
 
 			String response = this.reader.readLine();
 			if (!Common.replied(response, this.host, this.port, "226")) {
@@ -86,24 +85,23 @@ public class Client {
 			st.nextToken();
 			int request = Integer.parseInt(st.nextToken());
 			int service = Integer.parseInt(st.nextToken());
-			
+
 			int value = 0;
 			if (st.hasMoreTokens()) {
 				value = Integer.parseInt(st.nextToken());
 			}
-			
-			if (action == Action.read) {
-				Log.writeToFile(request+"	"+service+"	"+value, id);
-			}else{
-				Log.writeToFile(request+"	"+service, id);
-			}
-		}
 
-		// terminate
-		Common.sendCommand("BYE", this.writer);
-		Log.writeToFile("BYE", this.id);
-		this.reader.readLine();
-		Log.writeToFile("Terminating Connection! OK!", this.id);
+			if (action == Action.read) {
+				Log.writeToFile(request + "	" + service + "	" + value, id);
+			} else {
+				Log.writeToFile(request + "	" + service, id);
+			}
+
+			// terminate
+			Common.sendCommand("BYE", this.writer);
+			Log.writeToFile("BYE", this.id);
+			this.reader.readLine();
+		}
 	}
 
 	private boolean connect() throws InterruptedException {
@@ -112,9 +110,6 @@ public class Client {
 			attempt++;
 			try {
 				this.socket = new Socket(this.host, this.port);
-				Log
-						.writeToFile("Starting remote connection: SUCCESS!",
-								this.id);
 
 				this.reader = new BufferedReader(new InputStreamReader(
 						this.socket.getInputStream()));
@@ -125,8 +120,7 @@ public class Client {
 				if (Common.connected(response, this.host, this.port))
 					return true;
 			} catch (Exception e) {
-				Log
-						.write("Failed connection to the server. Attempt connection : "
+				Log.write("Failed connection to the server. Attempt connection : "
 								+ attempt);
 			}
 

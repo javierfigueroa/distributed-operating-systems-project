@@ -27,7 +27,7 @@ public class Server implements Runnable {
 
 	private void startClients() throws IOException {
 		int i = 0;
-		while (i < Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfReaders"))) { // read files with hosts
+		while (i < numberOfReaders) { // read files with hosts
 			String host = PropertyManager.getProperties().get("RW.reader" + Server.workers);
 			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.read);
 			new Thread(runner).start();
@@ -35,7 +35,7 @@ public class Server implements Runnable {
 		}
 		
 		i = 0;
-		while (i < Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfWriters"))) { // read files with hosts
+		while (i < numberOfWriters) { // read files with hosts
 			String host = PropertyManager.getProperties().get("RW.writer" + Server.workers);
 			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.write);
 			new Thread(runner).start();
@@ -46,7 +46,8 @@ public class Server implements Runnable {
 	public void run() {
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 		try {
-			while (threads.size() < Server.workers - 1) {
+			int limit = (numberOfReaders + numberOfWriters) * numberOfAccesses;
+			while (threads.size() < limit) {
 				Socket socket = this.socket.accept();
 
 				Log.write("Server: Accepting a new connection...");
@@ -77,6 +78,9 @@ public class Server implements Runnable {
 	private String host;
 	private int port;
 	private ServerSocket socket;
+	private int numberOfAccesses = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfAccesses"));
+	private int numberOfReaders = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfReaders"));
+	private int numberOfWriters = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfWriters"));
 	public static int workers = 1;
 	
 	public static int request = 0;

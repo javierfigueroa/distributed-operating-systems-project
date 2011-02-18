@@ -33,7 +33,6 @@ public class Connection implements Runnable {
 		this.request = request;
 	}
 
-	@Override
 	public void run() {
 		try {
 			listen();

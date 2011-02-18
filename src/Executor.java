@@ -27,7 +27,6 @@ public class Executor implements Runnable {
 		this.type = type;
 	}
 
-	@Override
 	public void run() {
 		String path = System.getProperty("user.dir");
 		Log.write("Starting Remote Process: Client ID: " + this.id + " on "
@@ -35,11 +34,12 @@ public class Executor implements Runnable {
 		int times = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfAccesses"));
 		String[] command = {
 				"ssh",
-//				"-i",
-//				"id_javier",
-//				"figueroa@" + this.host,
-				"javier.figueroa@" + this.host,
-				"java -jar " + path + "/start.jar " + this.server + " "
+				"-i",
+				"id_rsa",
+				"figueroa@" + this.host,
+//				"~/.ssh/id_rsa",
+//				"javier.figueroa@" + this.host,
+				"javac "+ path + "/*.java; java "+ path + "/start " + this.server + " "
 						+ this.port + " " + this.id + " " + type.name() + " " + times };
 
 		try {
@@ -58,11 +58,11 @@ public class Executor implements Runnable {
 			int exitValue = pr.exitValue();
 			if (exitValue != 0) {
 				Log.write("Warning: Remote Process could not start for " + this.type + " Client ID: "	+ this.id + ", host: " + this.host);
-				Server.workers--;
+//				Server.workers--;
 			}
 		} catch (Exception e) {
 			Log.write("Warning: Remote Process could not start for " + this.type + " Client ID: "	+ this.id + ", host: " + this.host);
-			Server.workers--;
+//			Server.workers--;
 			e.printStackTrace();
 		} 
 	}

@@ -22,7 +22,7 @@ public class start {
 				
 				thread.start();
 				thread.join();
-			} else if (args.length == 3) {
+			} else if (args.length == 5) {
 				// client start
 				String host = args[0];
 				int port = Integer.parseInt(args[1]);
