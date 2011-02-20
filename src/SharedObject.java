@@ -1,24 +1,20 @@
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class SharedObject {
 
 	public int getValue() {
-		
 		int save = 0;
 		int value;
-
 		Server.readers++;
 		do {
-
 			while (((save = writeCounter.get()) & 1) == 1)
 				;
 			value = this.value;
-			Server.service++;
 		} while (save != writeCounter.get());
 
+		Server.service++;
 		return value;
 	}
 
@@ -36,31 +32,6 @@ public class SharedObject {
 		}
 	}
 	
-
-//	public void setValue(int value) {
-//		writeLock.lock();
-//		try {
-//			this.value = value;
-//		} finally {
-//			Server.service++;
-//			writeLock.unlock();
-//		}
-//	}
-//
-//	public int getValue() {
-//		readLock.lock();
-//		try {
-//			return value;
-//		} finally {
-//			Server.readers++;
-//			Server.service++;
-//			readLock.unlock();
-//		}
-//	}
-
-//	 ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-//	 Lock readLock = lock.readLock();
-//	 Lock writeLock = lock.writeLock();
 	private int value = -1;
 	AtomicInteger writeCounter = new AtomicInteger();
 }

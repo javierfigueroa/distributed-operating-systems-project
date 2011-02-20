@@ -5,8 +5,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author E. Javier Figueroa 
@@ -39,26 +37,25 @@ public class Server implements Runnable {
 
 	private void startClients() throws IOException, InterruptedException {
 		Random randomSleep = new Random();
-		Pattern reader = Pattern.compile("RW.reader\\d$");
-		Pattern writer = Pattern.compile("RW.writer\\d$");
 		
-		for (String key : PropertyManager.getProperties().keySet()) {
-			Matcher matcherR = reader.matcher(key);
-			Matcher matcherW = writer.matcher(key);
-			if (matcherR.matches() || matcherW.matches()) {
-				String host = PropertyManager.getProperties().get(key);
-				long sleep = Long.parseLong(PropertyManager.getProperties().get(key+".sleepTime"));
-				Thread.sleep(500 + randomSleep.nextInt(500));
-				Executor runner = 
-					new Executor(
-							host, 
-							this.host, 
-							this.port, 
-							Character.getNumericValue(key.charAt(key.length() -1)), 
-							key.contains("read")  ? Action.read : Action.write, 
-							sleep);
-				new Thread(runner).start();
-			} 
+		int i = 0;
+		while (i < numberOfReaders) { // read files with hosts
+			String host = PropertyManager.getProperties().get("RW.reader" + Server.workers);
+			long sleep = Long.parseLong(PropertyManager.getProperties().get("RW.reader"+Server.workers+".sleepTime"));
+			Thread.sleep(500 + randomSleep.nextInt(500));
+			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.read, sleep);
+			new Thread(runner).start();
+			i++;
+		}
+		
+		i = 0;
+		while (i < numberOfWriters) { // read files with hosts
+			String host = PropertyManager.getProperties().get("RW.writer" + Server.workers);
+			long sleep = Long.parseLong(PropertyManager.getProperties().get("RW.writer"+Server.workers+".sleepTime"));
+			Thread.sleep(500 + randomSleep.nextInt(500));
+			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.write, sleep);
+			new Thread(runner).start();
+			i++;
 		}
 	}
 
