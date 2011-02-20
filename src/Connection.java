@@ -85,34 +85,18 @@ public class Connection implements Runnable {
 		int clientId = Integer.parseInt(st.nextToken());
 		long opTime = Long.parseLong(PropertyManager.getProperties().get("RW.reader"+clientId+".opTime"));
 		Log.write(Thread.currentThread().getName() + "(Reader" + clientId + "): Processing...");
-
-		int value = Server.sharedObject.getValue();
-		int service = Server.service;
-		int readers = Server.readers;
-		Server.readerOutput.append(service + "\t\t\t\t" + value + "\t\t\t\t" + "R" + clientId + "\t\t\t\t" + readers + Common.NL);
+		int value = Server.sharedObject.getValue(clientId, opTime);
 		
-		synchronized (this) {
-			wait(opTime);
-		}
-		
-		Server.readers--;
-		return reply(226, request + " " + service + " " + String.valueOf(value));
+		return reply(226, request + " " + Server.service + " " + String.valueOf(value));
 	}
 
 	private int write(StringTokenizer st) throws InterruptedException {
 		int clientId = Integer.parseInt(st.nextToken());
 		long opTime = Long.parseLong(PropertyManager.getProperties().get("RW.writer"+clientId+".opTime"));
 		Log.write(Thread.currentThread().getName() + "(Writer " + clientId + "): Processing...");
-
-		Server.sharedObject.setValue(clientId);
-		int service = Server.service;
-		Server.writerOutput.append(service + "\t\t\t\t" + clientId + "\t\t\t\t" + "W" + clientId + Common.NL);
-
-		synchronized (this) {
-			wait(opTime);
-		}
+		Server.sharedObject.setValue(clientId, opTime);
 		
-		return reply(226, request + " " + service);
+		return reply(226, request + " " + Server.service);
 	}
 
 	private int quit() throws IOException {

@@ -40,20 +40,20 @@ public class Server implements Runnable {
 		
 		int i = 0;
 		while (i < numberOfReaders) { // read files with hosts
-			String host = PropertyManager.getProperties().get("RW.reader" + Server.workers);
-			long sleep = Long.parseLong(PropertyManager.getProperties().get("RW.reader"+Server.workers+".sleepTime"));
+			String host = PropertyManager.getProperties().get("RW.reader" + workers);
+			long sleep = Long.parseLong(PropertyManager.getProperties().get("RW.reader"+workers+".sleepTime"));
 			Thread.sleep(500 + randomSleep.nextInt(500));
-			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.read, sleep);
+			Executor runner = new Executor(host, this.host, this.port, workers++, Action.read, sleep);
 			new Thread(runner).start();
 			i++;
 		}
 		
 		i = 0;
 		while (i < numberOfWriters) { // read files with hosts
-			String host = PropertyManager.getProperties().get("RW.writer" + Server.workers);
-			long sleep = Long.parseLong(PropertyManager.getProperties().get("RW.writer"+Server.workers+".sleepTime"));
+			String host = PropertyManager.getProperties().get("RW.writer" + workers);
+			long sleep = Long.parseLong(PropertyManager.getProperties().get("RW.writer"+workers+".sleepTime"));
 			Thread.sleep(500 + randomSleep.nextInt(500));
-			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.write, sleep);
+			Executor runner = new Executor(host, this.host, this.port, workers++, Action.write, sleep);
 			new Thread(runner).start();
 			i++;
 		}
@@ -96,14 +96,13 @@ public class Server implements Runnable {
 	private String host;
 	private int port;
 	private ServerSocket socket;
+	private int workers = 1;
 	private int numberOfAccesses = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfAccesses"));
 	private int numberOfReaders = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfReaders"));
 	private int numberOfWriters = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfWriters"));
 	
-	public static int workers = 1;
 	public static int request = 0;
 	public static volatile int service = 0;
-	public static volatile int readers = 0;
 
 	public static SharedObject sharedObject = new SharedObject();
 	public static volatile StringBuffer readerOutput = new StringBuffer();

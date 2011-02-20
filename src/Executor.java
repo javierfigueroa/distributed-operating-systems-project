@@ -39,7 +39,7 @@ public class Executor implements Runnable {
 				"-i",
 				"id_rsa",
 				"figueroa@" + this.host,
-//				"~/.ssh/id_rsa",
+				"~/.ssh/id_rsa",
 //				"javier.figueroa@" + this.host,
 				"cd " + path + " ; java start "
 //				"cd " + path + " ; java -jar start.jar "
