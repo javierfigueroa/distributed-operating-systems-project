@@ -85,13 +85,10 @@ public class Connection implements Runnable {
 		int clientId = Integer.parseInt(st.nextToken());
 		long opTime = Long.parseLong(PropertyManager.getProperties().get("RW.reader"+clientId+".opTime"));
 		Log.write(Thread.currentThread().getName() + "(Reader" + clientId + "): Queueing ClientID" + clientId + " ...");
-		Server.readers++;
 
 		int value = Server.sharedObject.getValue();
 		int service = Server.service;
-		int readers = Server.readers;
-		
-		Server.readerOutput.append(service + "\t\t\t\t" + value + "\t\t\t\t" + "R" + clientId + "\t\t\t\t" + readers + Common.NL);
+		Server.readerOutput.append(service + "\t\t\t\t" + value + "\t\t\t\t" + "R" + clientId + "\t\t\t\t" + Server.readers + Common.NL);
 		
 		synchronized (this) {
 			wait(opTime);
@@ -108,7 +105,6 @@ public class Connection implements Runnable {
 
 		Server.sharedObject.setValue(clientId);
 		int service = Server.service;
-
 		Server.writerOutput.append(service + "\t\t\t\t" + clientId + "\t\t\t\t" + "W" + clientId + Common.NL);
 
 		synchronized (this) {

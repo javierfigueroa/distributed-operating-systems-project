@@ -5,7 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Random;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author E. Javier Figueroa 
@@ -38,24 +39,26 @@ public class Server implements Runnable {
 
 	private void startClients() throws IOException, InterruptedException {
 		Random randomSleep = new Random();
-		int i = 0;
-		while (i < numberOfReaders) { // read files with hosts
-			String host = PropertyManager.getProperties().get("RW.reader" + Server.workers);
-			long sleep = Long.parseLong(PropertyManager.getProperties().get("RW.reader"+Server.workers+".sleepTime"));
-			Thread.sleep(1500 + randomSleep.nextInt(500));
-			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.read, sleep);
-			new Thread(runner).start();
-			i++;
-		}
+		Pattern reader = Pattern.compile("RW.reader\\d$");
+		Pattern writer = Pattern.compile("RW.writer\\d$");
 		
-		i = 0;
-		while (i < numberOfWriters) { // read files with hosts
-			String host = PropertyManager.getProperties().get("RW.writer" + Server.workers);
-			long sleep = Long.parseLong(PropertyManager.getProperties().get("RW.writer"+Server.workers+".sleepTime"));
-			Thread.sleep(1500 + randomSleep.nextInt(500));
-			Executor runner = new Executor(host, this.host, this.port, Server.workers++, Action.write, sleep);
-			new Thread(runner).start();
-			i++;
+		for (String key : PropertyManager.getProperties().keySet()) {
+			Matcher matcherR = reader.matcher(key);
+			Matcher matcherW = writer.matcher(key);
+			if (matcherR.matches() || matcherW.matches()) {
+				String host = PropertyManager.getProperties().get(key);
+				long sleep = Long.parseLong(PropertyManager.getProperties().get(key+".sleepTime"));
+				Thread.sleep(500 + randomSleep.nextInt(500));
+				Executor runner = 
+					new Executor(
+							host, 
+							this.host, 
+							this.port, 
+							Character.getNumericValue(key.charAt(key.length() -1)), 
+							key.contains("read")  ? Action.read : Action.write, 
+							sleep);
+				new Thread(runner).start();
+			} 
 		}
 	}
 
@@ -67,7 +70,7 @@ public class Server implements Runnable {
 				Socket socket = this.socket.accept();
 
 				Log.write("Server: Accepting a new connection...");
-				Connection connection = new Connection(socket, Server.request++);
+				Connection connection = new Connection(socket, ++Server.request);
 				Thread thread = new Thread(connection);
 				threads.add(thread);
 				thread.start();
@@ -101,8 +104,8 @@ public class Server implements Runnable {
 	private int numberOfWriters = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfWriters"));
 	
 	public static int workers = 1;
-	public static volatile int request = 0;
-	public volatile static int service = 0;
+	public static int request = 0;
+	public static volatile int service = 0;
 	public static volatile int readers = 0;
 
 	public static SharedObject sharedObject = new SharedObject();

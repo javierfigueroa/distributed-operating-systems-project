@@ -17,13 +17,13 @@ public class Log {
 	public static void write(String message){
 		System.out.println(String.format("%s", message));
 	}
-	
-	public static void writeToFile(String message, int clientId){
+		
+	public static void writeToFile(String message, String filename){
 		System.out.println(String.format("%s", message));
 		
 		Writer output = null;
 		String path = System.getProperty("user.dir");
-	    File file = new File(path+"/ID"+clientId+".log");
+	    File file = new File(path+"/"+filename+".log");
 	    try {
 			output = new BufferedWriter(new FileWriter(file, true));
 			output.write(message);

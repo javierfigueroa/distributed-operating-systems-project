@@ -30,15 +30,6 @@ public class start {
 				Action type = Action.valueOf(args[3]);
 				int times = Integer.parseInt(args[4]);
 				long sleep = Long.parseLong(args[5]);
-				
-				Log.writeToFile("Processing Command Line Arguments: ", id);
-				Log.writeToFile("Host: " + host, id);
-				Log.writeToFile("Port: " + port, id);
-				Log.writeToFile("ClientID: " + id, id);
-				Log.writeToFile("Action type: " + type.name(), id);
-				Log.writeToFile("Number of Accesses: " + times, id);
-				Log.writeToFile("Sleep Time: " + sleep, id);
-				Log.writeToFile("---------------", id);
 				new Client(host, port, id, type, times, sleep);
 			} 
 		} catch (IOException e) {

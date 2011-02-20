@@ -10,22 +10,17 @@ import java.util.StringTokenizer;
  * 
  */
 public class Client {
-	private String host;
-	private int port;
-	private int id;
-	private Action action;
-	private int times;
-	private long sleep;
-	private Socket socket;
-	private BufferedReader reader;
-	private BufferedWriter writer;
 
-	public Client(String host, int port, int id, Action action, int times, long sleep) {
+	public Client(String host, int port, int id, Action action, int times,
+			long sleep) {
 		this.host = host;
 		this.port = port;
 		this.id = id;
 		this.action = action;
 		this.times = times;
+		this.log = (action == Action.read ? "R" : "W") + id;
+
+		initLogFile(host, port, id, action, times, sleep);
 
 		try {
 			work();
@@ -46,21 +41,8 @@ public class Client {
 	}
 
 	private void work() throws Exception {
-		// connect to server
-
-		Log.writeToFile("Client Type: " + action.name() + "er", id);
-		Log.writeToFile("Client Name: " + id, id);
-		if (action == Action.read) {
-			Log.writeToFile("Request Sequence	Service Sequence	Object Value",
-					id);
-			Log.writeToFile("----------------	----------------	------------",
-					id);
-		} else {
-			Log.writeToFile("Request Sequence	Service Sequence", id);
-			Log.writeToFile("----------------	----------------", id);
-		}
-
 		for (int i = 0; i < times; i++) {
+			// connect to server
 			if (!connect()) {
 				String error = String.format(
 						"Failed to connect to server => %s:%d", this.host,
@@ -69,6 +51,7 @@ public class Client {
 				throw new Exception(error);
 			}
 
+			// send message to server
 			Common.sendCommand(String.format("%s %d", action.name(), this.id),
 					this.writer);
 
@@ -81,7 +64,7 @@ public class Client {
 				throw new Exception(error);
 			}
 
-			// get numbers to sort from server
+			// get server response
 			StringTokenizer st = new StringTokenizer(response);
 			st.nextToken();
 			int request = Integer.parseInt(st.nextToken());
@@ -93,15 +76,36 @@ public class Client {
 			}
 
 			if (action == Action.read) {
-				Log.writeToFile(request + "	" + service + "	" + value, id);
+				Log.writeToFile(request + "\t\t\t\t" + service + "\t\t\t\t" + value, log);
 			} else {
-				Log.writeToFile(request + "	" + service, id);
+				Log.writeToFile(request + "\t\t\t\t" + service, log);
 			}
 
 			// terminate
 			Common.sendCommand("BYE", this.writer);
 			this.reader.readLine();
 			Thread.sleep(sleep);
+		}
+	}
+
+	private void initLogFile(String host, int port, int id, Action action,
+			int times, long sleep) {
+		Log.writeToFile("Processing Command Line Arguments: ", log);
+		Log.writeToFile("Host: " + host, log);
+		Log.writeToFile("Port: " + port, log);
+		Log.writeToFile("Number of Accesses: " + times, log);
+		Log.writeToFile("Sleep Time: " + sleep, log);
+		Log.writeToFile("Client Type: " + action.name()
+				+ (action == Action.read ? "er" : "r"), log);
+		Log.writeToFile("Client Name: " + id, log);
+		if (action == Action.read) {
+			Log.writeToFile("Request Sequence	Service Sequence \t	Object Value",
+					log);
+			Log.writeToFile("----------------	---------------- \t	------------",
+					log);
+		} else {
+			Log.writeToFile("Request Sequence	Service Sequence", log);
+			Log.writeToFile("----------------	----------------", log);
 		}
 	}
 
@@ -121,7 +125,8 @@ public class Client {
 				if (Common.connected(response, this.host, this.port))
 					return true;
 			} catch (Exception e) {
-				Log.write("Failed connection to the server. Attempt connection : "
+				Log
+						.write("Failed connection to the server. Attempt connection : "
 								+ attempt);
 			}
 
@@ -130,4 +135,15 @@ public class Client {
 
 		return false;
 	}
+
+	private String host;
+	private int port;
+	private int id;
+	private Action action;
+	private int times;
+	private long sleep;
+	private String log;
+	private Socket socket;
+	private BufferedReader reader;
+	private BufferedWriter writer;
 }
