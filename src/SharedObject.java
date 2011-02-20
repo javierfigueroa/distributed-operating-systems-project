@@ -5,7 +5,8 @@ public class SharedObject {
 		startReading();
 		try {
 			Thread.sleep(opTime);
-			Server.readerOutput.append(++Server.service + "\t\t\t\t" + this.value + "\t\t\t\t" + "R" + clientId + "\t\t\t\t" + numberOfReaders + Common.NL);
+			int service = ++Server.service;
+			Server.readerOutput.append(service + "\t\t\t\t" + this.value + "\t\t\t\t" + "R" + clientId + "\t\t\t\t" + numberOfReaders + Common.NL);
 			return this.value;
 		} finally {
 			stopReading();
@@ -16,8 +17,9 @@ public class SharedObject {
 		startWriting();
 		try {
 			Thread.sleep(opTime);
-			Server.writerOutput.append(++Server.service + "\t\t\t\t" + this.value + "\t\t\t\t" + "W" + clientId + Common.NL);
+			int service = ++Server.service;
 			this.value = clientId;
+			Server.writerOutput.append(service + "\t\t\t\t" + this.value + "\t\t\t\t" + "W" + clientId + Common.NL);
 		} finally {
 			stopWriting();
 		}
