@@ -1,0 +1,16 @@
+Report
+
+- Description
+
+The first steps of development were to create a Server class along with a Connection class, these as in the previous project are in charge
+of initializing a server socket and spawning new threads for incoming connections. Along the development of these classes it was necessary 
+to develop other helper classes such as the PropertyManager and the Executor, one to take care of the loading of the properties file and the 
+other to remotely execute the client program via SSH. The second step was to develop the SharedObject class which is essentially a monitor object that 
+contains the Strong Reader Preference logic for the project's objective. Finally, I developed the code for the client it simply connects 
+to the server and print its response.
+
+- Challenges
+
+The biggest challenge was to get the counter for the service and the number of concurrent reader right. Since multiple threads are altering the counter,
+the location within the logic of the code were these counters are increased or decreased plays the most important role in getting the most accurate
+counter results at the moment of printing them to the output. 
