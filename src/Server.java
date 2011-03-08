@@ -91,7 +91,6 @@ public class Server implements Runnable {
 			}
 		}
 	}
-	
 
 	private String host;
 	private int port;
