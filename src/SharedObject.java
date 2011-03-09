@@ -1,3 +1,9 @@
+/**
+ * @author E. Javier Figueroa 
+ * COP5615 Spring 2011 
+ * University of Florida
+ * 
+ */
 
 public class SharedObject {
 
