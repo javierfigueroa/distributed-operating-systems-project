@@ -17,8 +17,6 @@ public class Server implements Connection, Runnable{
 		this.port = port;
 		Log.write("Server has started on port " + this.port + "!");
 		Log.write("Host name: " + this.host);
-		
-		startClients();
 		initOutput();
 	}
 
@@ -72,12 +70,19 @@ public class Server implements Connection, Runnable{
 		return request + "\t\t\t\t" + Server.service;
 	}
 	
-	public void run() {
+	public void run() {		
+		try {
+			startClients();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
 		while(pending()) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
