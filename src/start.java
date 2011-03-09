@@ -1,7 +1,6 @@
 
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.rmi.AlreadyBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -22,17 +21,16 @@ public class start {
 			if (args.length == 0) {
 				// server start
 				Log.write("Starting Server thread...");
-
 				String host = PropertyManager.getProperties().get("RW.server");
-				ServerSocket socket = new ServerSocket(0);
-				int port = socket.getLocalPort();
-				socket.close();
-				
+				int port = Integer.parseInt(PropertyManager.getProperties().get("Rmiregistry.port"));
 				Server server = new Server(host, port);
 				Connection stub = (Connection) UnicastRemoteObject.exportObject(server, 0);
-				
 	            Registry registry = LocateRegistry.getRegistry(host, port);
-	            registry.bind("Connection", stub);
+	            registry.bind("figueroa", stub);
+	            
+				Thread thread = new Thread(server);
+				thread.start();
+				thread.join();
 			} else if (args.length == 6) {
 				// client start
 				String host = args[0];

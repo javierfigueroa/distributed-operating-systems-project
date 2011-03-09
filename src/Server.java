@@ -1,7 +1,6 @@
 
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.rmi.RemoteException;
 import java.util.Random;
 
@@ -11,7 +10,7 @@ import java.util.Random;
  * University of Florida
  * 
  */
-public class Server implements Connection {
+public class Server implements Connection, Runnable{
 	
 	public Server(String host, int port) throws IOException, InterruptedException {
 		this.host = host;
@@ -57,38 +56,37 @@ public class Server implements Connection {
 		}
 	}
 
-	@Override
 	public String read(int clientId) throws RemoteException, InterruptedException {
 		Server.request++;
-		try {
-			long opTime = Long.parseLong(PropertyManager.getProperties().get("RW.reader"+clientId+".opTime"));
-			Log.write(Thread.currentThread().getName() + "(Reader" + clientId + "): Processing...");
-			int value = Server.sharedObject.getValue(clientId, opTime);
-			return request + " " + Server.service + " " + String.valueOf(value);
-		}finally {
-			if (isFinished()) {
-				exit();
-			}
-		}
+		long opTime = Long.parseLong(PropertyManager.getProperties().get("RW.reader"+clientId+".opTime"));
+		Log.write(Thread.currentThread().getName() + "(Reader " + clientId + "): Processing...");
+		int value = Server.sharedObject.getValue(clientId, opTime);
+		return request + "\t\t\t\t" + Server.service + "\t\t\t\t" + String.valueOf(value);
 	}
 
-	@Override
 	public String write(int clientId) throws InterruptedException, RemoteException {
 		Server.request++;
-		try {
-			long opTime = Long.parseLong(PropertyManager.getProperties().get("RW.writer"+clientId+".opTime"));
-			Log.write(Thread.currentThread().getName() + "(Writer " + clientId + "): Processing...");
-			Server.sharedObject.setValue(clientId, opTime);
-			return request + " " + Server.service;
-		}finally{
-			if (isFinished()) {
-				exit();
+		long opTime = Long.parseLong(PropertyManager.getProperties().get("RW.writer"+clientId+".opTime"));
+		Log.write(Thread.currentThread().getName() + "(Writer " + clientId + "): Processing...");
+		Server.sharedObject.setValue(clientId, opTime);
+		return request + "\t\t\t\t" + Server.service;
+	}
+	
+	public void run() {
+		while(pending()) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
+		
+		exit();
 	}
 
-	public Boolean isFinished() {
-		return Server.request >= (numberOfReaders + numberOfWriters) * numberOfAccesses;
+	public Boolean pending() {
+		return Server.request < (numberOfReaders + numberOfWriters) * numberOfAccesses;
 	}
 
 	private void exit() {
@@ -99,7 +97,6 @@ public class Server implements Connection {
 
 	private String host;
 	private int port;
-	private ServerSocket socket;
 	private int workers = 1;
 	private int numberOfAccesses = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfAccesses"));
 	private int numberOfReaders = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfReaders"));

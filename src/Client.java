@@ -40,7 +40,7 @@ public class Client {
 	private void work() throws Exception {
 		for (int i = 0; i < times; i++) {
 			Registry registry = LocateRegistry.getRegistry(host, port);
-            Connection stub = (Connection) registry.lookup("Connection");
+            Connection stub = (Connection) registry.lookup("figueroa");
             String response = null;
             if (action == Action.read) {
 	            response = stub.read(this.id);
