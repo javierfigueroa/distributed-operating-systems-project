@@ -31,13 +31,16 @@ public class Exec implements Runnable {
 		Log.write("Starting Remote Process: Client ID: " + this.id + " on "
 				+ this.host);
 		String[] command = {
-				"ssh",
-				"-i",
-				"id_javier",
-				"figueroa@" + this.host,
-				"java -jar " + path + "/start.jar " + this.server + " "
-						+ this.port + " " + this.id };
+			"-i",
+			"id_rsa",
+			"figueroa@" + this.host,
+			"~/.ssh/id_rsa",
+	//		"javier.figueroa@" + this.host,
+			"cd " + path + " ; java start "
+	//		"cd " + path + " ; java -jar start.jar "
+			+ this.server + " "	+ this.port + " " + this.id };
 
+		
 		try {
 			Runtime rt = Runtime.getRuntime();
 			Process pr = rt.exec(command);
