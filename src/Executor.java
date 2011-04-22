@@ -36,10 +36,14 @@ public class Executor implements Runnable {
 		int times = Integer.parseInt(PropertyManager.getProperties().get("RW.numberOfAccesses"));
 		String[] command = {
 				"ssh",
+				"-o",
+				"UserKnownHostsFile=/dev/null",
+				"-o", 
+				"StrictHostKeyChecking=no",
 				"-i",
 				"id_rsa",
 				"figueroa@" + this.host,
-				"~/.ssh/id_rsa",
+				"id_rsa",
 //				"javier.figueroa@" + this.host,
 				"cd " + path + " ; java start "
 //				"cd " + path + " ; java -jar start.jar "
