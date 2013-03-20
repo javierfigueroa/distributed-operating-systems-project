@@ -1,0 +1,18 @@
+Report
+
+- Description
+
+The first step of this project builds a class that will start a client or a server. The server is not to do any work but execute the client program in remote machines, once the commands are
+remotely executed this server instance will gracefully terminate. The clients upon start will open a multicast socket and join a multicast group, this socket is passed to 2 
+new and independent threads, one is the multicaster which broadcasts messages to the group and the other is the listener which receives broadcasted messages from the group. 
+The listener thread will queue incoming requests if the client is the owner of the token at the time of the request. 
+The client program, in addition to starting the multicaster and listener threads also starts a thread to listen for unicast messages. This thread is responsible of updating
+the client's sequence vector and token. Finally, the client will constantly dequeue request as long as it owns the token, which is passed to the requester via a newly created TCP connection.
+To finalize the client program will stop when the number of requests in the sequence vector and token match the system.properties specified number of requests. The first client program to 
+reach this condition will broadcast a message to the rest of the group to trigger the end of the communication, at which point all of the clients terminate gracefully.
+
+- Challenges
+
+The biggest challenge was while developing this project was implementing the Suzuki/Kasima broadcast algorithm. At first sight the algorithm does not seem challenging but once the number of clients
+increases dealing with the queueing of the token, personally was a bit challenging. Careful analysis of the algorithm allowed me find issues in the code that updates the token which I was able to 
+fix. Another big challenge was the testing of the clients and verifying that the actual execution yielded the correct results or output.
